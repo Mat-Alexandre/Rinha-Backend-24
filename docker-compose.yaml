@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    restart: always
+    shm_size: 128mb
+    hostname: db
+    environment:
+      POSTGRES_USER: rinhabackend2024
+      POSTGRES_PASSWORD: pwd12345678
+      POSTGRES_DB: rinhabackend2024
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./script.sql:/docker-entrypoint-initdb.d/script.sql
+    deploy:
+      resources:
+        limits:
+          cpus: "0.13"
+          memory: "140MB"
+
+  api01: &api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: api01
+    container_name: spring-boot-api01
+    environment:
+      URL: jdbc:postgresql://db:5432/rinhabackend2024
+      PORT: 8081
+
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          cpus: "0.6"
+          memory: "200MB"
+
+  api02:
+    <<: *api
+    hostname: api02
+    container_name: spring-boot-api02
+    environment:
+      URL: jdbc:postgresql://db:5432/rinhabackend2024
+      PORT: 8082
+    ports:
+      - "8082:8080"
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api01
+      - api02
+    ports:
+      # Obrigatório expor/usar a porta 9999 no load balancer!
+      - "9999:9999"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.17"
+          memory: "10MB"
+
+networks:
+  default:
+    driver: bridge
+    name: rinha-nginx-2024q1
