@@ -1,15 +1,13 @@
 package com.rinha.backend2024.infra.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -20,8 +18,16 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 public class Transaction {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_transaction")
-    public String transactionId;
+    public BigInteger transactionId;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "id_client",
+            foreignKey = @ForeignKey(name = "id_client")
+    )
+    private Client client;
 
     @Column(name = "valor")
     public BigDecimal value;

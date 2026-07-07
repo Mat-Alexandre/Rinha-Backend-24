@@ -33,7 +33,7 @@ public class ClientController {
     @GetMapping("/{clientId}/extrato")
     public final ResponseEntity<@NonNull ExtractResponse> clientExtract(@PathVariable Integer clientId) {
         log.info("Fetching transactions from client id: {}", clientId);
-        var response = this.ctService.getLastTransactions(clientId, 10);
+        var response = this.ctService.getLastTransactions(clientId);
         return ResponseEntity.ok().body(response);
     }
 }

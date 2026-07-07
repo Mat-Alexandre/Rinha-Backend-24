@@ -1,19 +1,14 @@
 package com.rinha.backend2024.services;
 
 import com.rinha.backend2024.infra.dto.ClientDTO;
-import com.rinha.backend2024.infra.dto.SaldoDTO;
 import com.rinha.backend2024.infra.dto.request.TransactionRequest;
 import com.rinha.backend2024.infra.dto.response.ExtractResponse;
 import com.rinha.backend2024.infra.dto.response.SimpleTransactionResponse;
-import com.rinha.backend2024.infra.dto.response.TransactionResponse;
 import com.rinha.backend2024.infra.exceptions.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -28,7 +23,6 @@ public class ClientTransactionService {
         this.clientService = clientService;
     }
 
-    @Transactional
     public SimpleTransactionResponse createTransaction(Integer clientId, TransactionRequest trxRequest) {
         ClientDTO clientData = this.getAsyncClientData(clientId);
 
@@ -51,14 +45,34 @@ public class ClientTransactionService {
         );
     }
 
-    public ExtractResponse getLastTransactions(Integer clientId, Integer numTransactions) {
-        if (numTransactions < 0 || numTransactions > 100) {
-            throw new NumberTransactionsOutOfBoundException("Number of last transactions must be 0 < n < 100.");
+    public ExtractResponse getLastTransactions(Integer clientId) {
+        ExtractResponse clientTransaction;
+
+        try {
+            var asyncClientTransaction = this.trxService.getClientLastTransactions(clientId);
+
+            // Wait for all tasks to finish
+            CompletableFuture.allOf(asyncClientTransaction).join();
+
+            clientTransaction = asyncClientTransaction.get();
+        }catch (ExecutionException e) {
+            log.error(e.getMessage());
+            throw new AsyncProcessingException("Async execution went wrong. " + e.getMessage());
+        }catch (InterruptedException e) {
+            log.error(e.getMessage());
+            throw new AsyncProcessingException("Async processing was interrupted. " + e.getMessage());
+        }catch (ClientNotFoundException e) {
+            log.error(e.getMessage());
+            throw new ClientNotFoundException(e.getMessage());
         }
 
-//        var result = this.trxService.getClientLastTransactions(clientId, numTransactions);
+        if (clientTransaction == null) {
+            var message = "Unable to fetch data for client's transaction. Async processing returned null.";
+            log.error(message);
+            throw new AsyncProcessingException(message);
+        }
 
-        return new ExtractResponse(null, null);
+        return clientTransaction;
     }
 
     private static Integer getNewBalance(

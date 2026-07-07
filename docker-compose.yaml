@@ -9,15 +9,16 @@ services:
       POSTGRES_USER: rinhabackend2024
       POSTGRES_PASSWORD: pwd12345678
       POSTGRES_DB: rinhabackend2024
+    command: ["postgres", "-c", "max_connections=100"]
     ports:
       - "5432:5432"
     volumes:
       - ./script.sql:/docker-entrypoint-initdb.d/script.sql
-    deploy:
-      resources:
-        limits:
-          cpus: "0.13"
-          memory: "140MB"
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "0.5"
+#          memory: "200MB"
 
   api01: &api
     build:
@@ -33,11 +34,11 @@ services:
       - "8081:8080"
     depends_on:
       - db
-    deploy:
-      resources:
-        limits:
-          cpus: "0.6"
-          memory: "200MB"
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "0.4"
+#          memory: "150MB"
 
   api02:
     <<: *api
@@ -59,11 +60,11 @@ services:
     ports:
       # Obrigatório expor/usar a porta 9999 no load balancer!
       - "9999:9999"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.17"
-          memory: "10MB"
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "0.2"
+#          memory: "50MB"
 
 networks:
   default:

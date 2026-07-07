@@ -7,6 +7,7 @@ import com.rinha.backend2024.repository.ClientsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -38,6 +39,7 @@ public class ClientService {
     }
 
     @Async("asyncTaskExecutor")
+    @Transactional
     public void updateClientBalance(ClientDTO clientDTO, Integer clientId, Integer newBalance) {
         var clientData = new Client();
 

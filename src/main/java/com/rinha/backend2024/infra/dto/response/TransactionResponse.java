@@ -2,6 +2,7 @@ package com.rinha.backend2024.infra.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 /**
@@ -14,7 +15,7 @@ import java.time.OffsetDateTime;
  */
 public record TransactionResponse(
         @JsonGetter("valor")
-        Integer transactionValue,
+        BigDecimal transactionValue,
         @JsonGetter("tipo")
         char transactionType,
         @JsonGetter("descricao")
